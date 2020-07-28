@@ -1,1 +1,6 @@
 --- # main.yml for the general role
+- name: Initial Update
+  dnf:
+    name: '*'
+    state: latest
+  tags: pkgs

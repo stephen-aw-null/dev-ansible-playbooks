@@ -1,0 +1,64 @@
+--- # main.yml for AWS EC2 instance deployments
+- name: EC2 Network Configuration
+  block:
+    - name: VPC Creation
+      ec2_vpc_net:
+        name: testnet
+        cidr_block: "{{ aws_vpc_block_test }}"
+        region: "{{ aws_region }}"
+        state: present
+      register: aws_vpc_testnet_id.vpc.id
+      tags: ec2_vpc
+    - name: VPC Subnet Creation
+      ec2_vpc_subnet:
+        cidr: "{{ aws_vpc_subnet_test_1 }}"
+        vpc_id: "{{ aws_vpc_testnet_id }}"
+        state: present
+      tags: ec2_vpc
+  rescue:
+    - name: VPC Subnet Deletion
+      ec2_vpc_subnet:
+        cidr: "{{ aws_vpc_subnet_test_1 }}"
+        vpc_id: "{{ aws_vpc_testnet_id }}"
+        state: absent
+      tags: ec2_destroy
+    - name: VPC Deletion
+      ec2_vpc_net:
+        name: testnet
+        region: "{{ aws_region }}"
+        state: absent
+      tags: ec2_destroy
+- name: EC2 Security Configuration
+  block:
+    - name: Create Security Groups
+      ec2_group:
+        name: "{{ aws_ec2_test_groups }}"
+        description: "Security group for EC2 test instances."
+        region: "{{ aws_region }}"
+        vpc_id: "{{ aws_vpc_testnet_id }}"
+        state: present
+      tags: ec2_sec
+  rescue:
+    - name: Destroy Security Groups
+      ec2_group:
+        name: "{{ aws_ec2_test_groups }}"
+        region: "{{ aws_region }}"
+        state: absent
+      tags: ec2_destroy
+# Provision the EC2 Instances
+- name: Initial EC2 Test Deployments
+  block:
+    - ec2:
+        count: 4
+        image: "{{ aws_std_ami }}"
+        instance_type: "{{ aws_std_instance }}"
+        group: "{{ aws_ec2_test_groups }}"
+        region: "{{ aws_region }}"
+        state: present
+        wait: yes
+    tags: ec2_deploy
+  rescue:
+    - ec2:
+        instance_ids: '*'
+        state: absent
+    tags: ec2_destroy
