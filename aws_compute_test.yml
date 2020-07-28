@@ -1,0 +1,7 @@
+--- # Playbook to execute the aws_compute role
+- hosts: localhost
+  gather_facts: False
+  tasks:
+    - name: Import the aws_compute role
+      import_role:
+        name: aws_compute
