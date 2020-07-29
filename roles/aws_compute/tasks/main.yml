@@ -7,19 +7,19 @@
         cidr_block: "{{ aws_vpc_block_test }}"
         region: "{{ aws_region }}"
         state: present
-      register: aws_vpc_testnet_id.vpc.id
+      register: aws_vpc_testnet_id
       tags: ec2_vpc
     - name: VPC Subnet Creation
       ec2_vpc_subnet:
         cidr: "{{ aws_vpc_subnet_test_1 }}"
-        vpc_id: "{{ aws_vpc_testnet_id }}"
+        vpc_id: "{{ aws_vpc_testnet_id.vpc.id }}"
         state: present
       tags: ec2_vpc
   rescue:
     - name: VPC Subnet Deletion
       ec2_vpc_subnet:
         cidr: "{{ aws_vpc_subnet_test_1 }}"
-        vpc_id: "{{ aws_vpc_testnet_id }}"
+        vpc_id: "{{ aws_vpc_testnet_id.vpc.id }}"
         state: absent
       tags: ec2_destroy
     - name: VPC Deletion
@@ -35,7 +35,7 @@
         name: "{{ aws_ec2_test_groups }}"
         description: "Security group for EC2 test instances."
         region: "{{ aws_region }}"
-        vpc_id: "{{ aws_vpc_testnet_id }}"
+        vpc_id: "{{ aws_vpc_testnet_id.vpc.id }}"
         state: present
       tags: ec2_sec
   rescue:
@@ -56,9 +56,9 @@
         region: "{{ aws_region }}"
         state: present
         wait: yes
-    tags: ec2_deploy
+      tags: ec2_deploy
   rescue:
     - ec2:
         instance_ids: '*'
         state: absent
-    tags: ec2_destroy
+      tags: ec2_destroy
