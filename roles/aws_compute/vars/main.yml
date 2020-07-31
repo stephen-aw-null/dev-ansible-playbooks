@@ -4,6 +4,4 @@ aws_std_ami: ami-08f3d892de259504d # Standard Amazon Linux 2 AMI
 aws_std_instance: t2.micro
 aws_vpc_block_test: 172.30.1.0/24
 aws_vpc_subnet_test_1: 172.30.1.0/24
-aws_ec2_test_groups:
-  - "private"
-  - "development"
+aws_ec2_test_groups: "development"
