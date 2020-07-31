@@ -37,6 +37,7 @@
         region: "{{ aws_region }}"
         vpc_id: "{{ aws_vpc_testnet_id.vpc.id }}"
         state: present
+      register: aws_sec_groups
       tags: ec2_sec
   rescue:
     - name: Destroy Security Groups
@@ -52,7 +53,7 @@
         count: 4
         image: "{{ aws_std_ami }}"
         instance_type: "{{ aws_std_instance }}"
-        group: "{{ aws_ec2_test_groups }}"
+        group_id: "{{ aws_sec_groups.group_id }}"
         region: "{{ aws_region }}"
         state: present
         wait: yes
@@ -62,3 +63,10 @@
         instance_ids: '*'
         state: absent
       tags: ec2_destroy
+- name: Gather Information on Deployed Instances
+  block:
+    - ec2_instance_info:
+        filters:
+          instance-state-name: [ "running" ]
+      register: aws_deployed_instance_info
+      tags: ec2_deploy
